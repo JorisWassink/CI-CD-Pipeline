@@ -1,0 +1,9 @@
+{
+  "name": "CI-CD-Pipeline",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo \"build complete\"",
+    "test": "echo \"test complete\""
+  },
+  "dependencies": {}
+}
