@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roman Numeral Converter</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --stone: #f5f0e8;
+    --parchment: #ede5d0;
+    --warm-parchment: #e8dfc8;
+    --ink: #1a1410;
+    --deep-ink: #0d0a07;
+    --rust: #8b3a1a;
+    --gold: #b8860b;
+    --gold-light: #d4a42a;
+    --laurel: #4a5e3a;
+    --marble: #e8e4dc;
+    --shadow: rgba(26, 20, 16, 0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--stone);
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(184,134,11,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(139,58,26,0.05) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── DECORATIVE BORDER ── */
+  .page-frame {
+    width: 100%;
+    max-width: 680px;
+    position: relative;
+  }
+
+  .corner {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    pointer-events: none;
+  }
+  .corner svg { width: 100%; height: 100%; }
+  .corner.tl { top: -4px; left: -4px; }
+  .corner.tr { top: -4px; right: -4px; transform: scaleX(-1); }
+  .corner.bl { bottom: -4px; left: -4px; transform: scaleY(-1); }
+  .corner.br { bottom: -4px; right: -4px; transform: scale(-1); }
+
+  .border-top, .border-bottom {
+    position: absolute;
+    left: 44px; right: 44px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), var(--rust), var(--gold), transparent);
+  }
+  .border-top { top: 2px; }
+  .border-bottom { bottom: 2px; }
+  .border-left, .border-right {
+    position: absolute;
+    top: 44px; bottom: 44px;
+    width: 3px;
+    background: linear-gradient(180deg, transparent, var(--gold), var(--rust), var(--gold), transparent);
+  }
+  .border-left { left: 2px; }
+  .border-right { right: 2px; }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    padding: 36px 40px 28px;
+  }
+
+  .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 10px;
+    opacity: 0.85;
+  }
+
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--deep-ink);
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    text-shadow: 1px 1px 0 rgba(184,134,11,0.2);
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--rust);
+    margin-top: 8px;
+    opacity: 0.8;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px auto 0;
+    width: fit-content;
+  }
+  .divider-line { width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .divider-line.right { background: linear-gradient(270deg, transparent, var(--gold)); }
+  .divider-ornament {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.1rem;
+  }
+
+  /* ── MAIN CARD ── */
+  .card {
+    background: var(--parchment);
+    background-image:
+      radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.4) 0%, transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    border: 1px solid rgba(184,134,11,0.3);
+    box-shadow:
+      0 2px 0 rgba(255,255,255,0.6) inset,
+      0 -1px 0 rgba(0,0,0,0.05) inset,
+      0 8px 32px var(--shadow),
+      0 2px 8px rgba(0,0,0,0.06);
+    margin: 0 8px;
+    padding: 0 0 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── TOGGLE ── */
+  .mode-toggle {
+    display: flex;
+    border-bottom: 1px solid rgba(184,134,11,0.25);
+    background: rgba(0,0,0,0.025);
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 16px 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: 0.5;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .mode-btn:first-child { border-right: 1px solid rgba(184,134,11,0.2); }
+  .mode-btn.active {
+    opacity: 1;
+    color: var(--rust);
+    background: var(--parchment);
+  }
+  .mode-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 20%; right: 20%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--rust), transparent);
+  }
+  .mode-btn:hover:not(.active) { opacity: 0.75; }
+
+  /* ── CONVERTER ── */
+  .converter {
+    padding: 32px 40px 0;
+  }
+
+  .field-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .input-wrap {
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--warm-parchment);
+    border: 1px solid rgba(139,58,26,0.25);
+    border-radius: 2px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--deep-ink);
+    letter-spacing: 0.05em;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input:focus {
+    border-color: var(--rust);
+    box-shadow: 0 0 0 3px rgba(139,58,26,0.1), inset 0 1px 3px rgba(0,0,0,0.06);
+    background: #efe6cf;
+  }
+  input.error {
+    border-color: #c0392b;
+    box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+  }
+
+  .hint {
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--ink);
+    opacity: 0.45;
+    min-height: 1.2em;
+    margin-bottom: 20px;
+    padding-left: 2px;
+  }
+  .hint.error-msg { color: #b03a2e; opacity: 0.9; font-style: normal; }
+
+  /* ── ARROW ── */
+  .arrow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0 20px;
+    gap: 16px;
+  }
+  .arrow-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(184,134,11,0.35)); }
+  .arrow-line.r { background: linear-gradient(270deg, transparent, rgba(184,134,11,0.35)); }
+  .arrow-icon {
+    width: 32px; height: 32px;
+    border: 1px solid rgba(184,134,11,0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+    font-size: 1rem;
+    background: var(--parchment);
+  }
+
+  /* ── RESULT ── */
+  .result-wrap {
+    position: relative;
+  }
+
+  .result-box {
+    width: 100%;
+    min-height: 72px;
+    background: linear-gradient(135deg, #f0e8d5, var(--warm-parchment));
+    border: 1px solid rgba(184,134,11,0.35);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 20px;
+    text-align: center;
+    transition: all 0.3s;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.04);
+  }
+
+  .result-value {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.1rem, 3vw, 1.6rem);
+    font-weight: 900;
+    color: var(--rust);
+    letter-spacing: 0.08em;
+    word-break: break-word;
+    transition: all 0.3s;
+  }
+
+  .result-placeholder {
+    font-style: italic;
+    opacity: 0.35;
+    font-size: 0.9rem;
+    font-family: 'EB Garamond', serif;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--ink);
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: none;
+    border: 1px solid rgba(184,134,11,0.3);
+    border-radius: 2px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    transition: all 0.2s;
+    opacity: 0;
+  }
+  .result-wrap:hover .copy-btn,
+  .result-wrap:focus-within .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: rgba(184,134,11,0.1); border-color: var(--gold); }
+  .copy-btn.copied { color: var(--laurel); border-color: var(--laurel); }
+
+  /* ── REFERENCE TABLE ── */
+  .reference {
+    margin: 36px 40px 0;
+    border-top: 1px solid rgba(184,134,11,0.2);
+    padding-top: 24px;
+  }
+
+  .ref-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(184,134,11,0.15);
+    border: 1px solid rgba(184,134,11,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .ref-cell {
+    background: var(--parchment);
+    padding: 7px 6px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+  .ref-cell:hover { background: var(--warm-parchment); }
+
+  .ref-roman {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--rust);
+    min-width: 32px;
+    text-align: right;
+  }
+  .ref-sep { color: rgba(184,134,11,0.4); font-size: 0.75rem; }
+  .ref-num {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    opacity: 0.7;
+    min-width: 36px;
+  }
+
+  /* ── FOOTER ── */
+  .card-footer {
+    text-align: center;
+    padding: 24px 40px 0;
+    font-size: 0.75rem;
+    font-style: italic;
+    color: var(--ink);
+    opacity: 0.35;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .converter { padding: 24px 24px 0; }
+    .reference { margin: 28px 24px 0; }
+    .card-footer { padding: 20px 24px 0; }
+    .ref-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── SHIMMER on result ── */
+  @keyframes shimmer {
+    0%   { opacity: 0.6; }
+    50%  { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+  .result-value.updating { animation: shimmer 0.4s ease; }
+</style>
+</head>
+<body>
+
+<div class="page-frame">
+  <!-- Decorative corners -->
+  <div class="corner tl">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 44 L4 4 L44 4" stroke="#b8860b" stroke-width="1.5" fill="none"/>
+      <path d="M4 44 L4 28 M4 4 L20 4" stroke="#8b3a1a" stroke-width="0.75" fill="none" stroke-dasharray="2 4"/>
+      <circle cx="4" cy="4" r="3" fill="#b8860b" opacity="0.7"/>
+      <path d="M10 4 L14 8 M4 10 L8 14" stroke="#b8860b" stroke-width="0.75" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="corner tr"><svg viewBox="0 0 48 48" fill="none"><path d="M4 44 L4 4 L44 4" stroke="#b8860b" stroke-width="1.5" fill="none"/><path d="M4 44 L4 28 M4 4 L20 4" stroke="#8b3a1a" stroke-width="0.75" fill="none" stroke-dasharray="2 4"/><circle cx="4" cy="4" r="3" fill="#b8860b" opacity="0.7"/><path d="M10 4 L14 8 M4 10 L8 14" stroke="#b8860b" stroke-width="0.75" opacity="0.5"/></svg></div>
+  <div class="corner bl"><svg viewBox="0 0 48 48" fill="none"><path d="M4 44 L4 4 L44 4" stroke="#b8860b" stroke-width="1.5" fill="none"/><path d="M4 44 L4 28 M4 4 L20 4" stroke="#8b3a1a" stroke-width="0.75" fill="none" stroke-dasharray="2 4"/><circle cx="4" cy="4" r="3" fill="#b8860b" opacity="0.7"/><path d="M10 4 L14 8 M4 10 L8 14" stroke="#b8860b" stroke-width="0.75" opacity="0.5"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 48 48" fill="none"><path d="M4 44 L4 4 L44 4" stroke="#b8860b" stroke-width="1.5" fill="none"/><path d="M4 44 L4 28 M4 4 L20 4" stroke="#8b3a1a" stroke-width="0.75" fill="none" stroke-dasharray="2 4"/><circle cx="4" cy="4" r="3" fill="#b8860b" opacity="0.7"/><path d="M10 4 L14 8 M4 10 L8 14" stroke="#b8860b" stroke-width="0.75" opacity="0.5"/></svg></div>
+  <div class="border-top"></div>
+  <div class="border-bottom"></div>
+  <div class="border-left"></div>
+  <div class="border-right"></div>
+
+  <header>
+    <p class="eyebrow">Numerorum Romanorum</p>
+    <h1>Roman Numeral<br>Converter</h1>
+    <p class="subtitle">Integer · Roman · Integer</p>
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-ornament">✦</span>
+      <div class="divider-line right"></div>
+    </div>
+  </header>
+
+  <div class="card">
+    <!-- Mode toggle -->
+    <div class="mode-toggle" role="tablist">
+      <button class="mode-btn active" id="btn-int" onclick="setMode('int')" role="tab" aria-selected="true">
+        Integer → Roman
+      </button>
+      <button class="mode-btn" id="btn-rom" onclick="setMode('rom')" role="tab" aria-selected="false">
+        Roman → Integer
+      </button>
+    </div>
+
+    <!-- Converter -->
+    <div class="converter">
+      <label class="field-label" id="input-label" for="main-input">Enter Integer</label>
+      <div class="input-wrap">
+        <input type="number" id="main-input"
+               placeholder="e.g. 2147483647"
+               min="1"
+               oninput="onInput()"
+               onkeydown="suppressE(event)"
+               autocomplete="off"
+               spellcheck="false">
+      </div>
+      <p class="hint" id="hint-text">Accepts 1 to 2,147,483,647</p>
+
+      <div class="arrow-row">
+        <div class="arrow-line"></div>
+        <div class="arrow-icon">↓</div>
+        <div class="arrow-line r"></div>
+      </div>
+
+      <label class="field-label" id="output-label">Result</label>
+      <div class="result-wrap">
+        <div class="result-box" id="result-box">
+          <span class="result-value result-placeholder" id="result-text">awaiting input…</span>
+        </div>
+        <button class="copy-btn" id="copy-btn" onclick="copyResult()" title="Copy result">Copy</button>
+      </div>
+    </div>
+
+    <!-- Reference -->
+    <div class="reference">
+      <p class="ref-title">Reference Values</p>
+      <div class="ref-grid" id="ref-grid"></div>
+    </div>
+
+    <p class="card-footer">Standard Roman numeral notation · 32-bit integer range</p>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
