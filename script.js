@@ -161,30 +161,67 @@ function convertToInt(raw, test = false) {
 
   const s = raw.toUpperCase().replace(/\s/g, '');
 
-  // Validate characters
   if (!/^[IVXLCDM]+$/.test(s)) {
     throw new Error('Input must be a valid Roman numeral.');
   }
 
-  let total = 0;
+  if (/VV|LL|DD/.test(s)) {
+    throw new Error('Input must be a valid Roman numeral.');
+  }
+
+  if (/IIII|XXXX|CCCC|MMMM/.test(s)) {
+    throw new Error('Input must be a valid Roman numeral.');
+  }
+
+  const VALID_SUBTRACTIVE = new Set(['IV','IX','XL','XC','CD','CM']);
+  for (let i = 0; i < s.length - 1; i++) {
+    const curr = ROMAN_MAP[s[i]];
+    const next = ROMAN_MAP[s[i + 1]];
+    if (curr < next) {
+      if (!VALID_SUBTRACTIVE.has(s[i] + s[i + 1])) {
+        throw new Error('Input must be a valid Roman numeral.');
+      }
+    }
+  }
+
+  for (let i = 0; i < s.length - 2; i++) {
+    const curr = ROMAN_MAP[s[i]];
+    const next = ROMAN_MAP[s[i + 1]];
+    if (curr < next) {
+      const after = ROMAN_MAP[s[i + 2]];
+      if (after && after >= curr) {
+        throw new Error('Input must be a valid Roman numeral.');
+      }
+      i++;
+    }
+  }
+
+  const values = [];
   for (let i = 0; i < s.length; i++) {
     const curr = ROMAN_MAP[s[i]];
     const next = ROMAN_MAP[s[i + 1]];
     if (next && curr < next) {
-      total -= curr;
+      values.push(next - curr);
+      i++;
     } else {
-      total += curr;
+      values.push(curr);
     }
   }
 
-  if (total < 1) {
-    throw new Error('Could not parse a valid numeral.');
-  }
-  if (total > INT_MAX) {
-    throw new Error('Input too large.');
+  for (let i = 0; i < values.length - 1; i++) {
+    if (values[i] < values[i + 1]) {
+      throw new Error('Input must be a valid Roman numeral.');
+    }
   }
 
-  if(!test)
+  const total = values.reduce((a, b) => a + b, 0);
+
+  if (total < 1)
+    throw new Error('Could not parse a valid numeral.');
+  if (total > INT_MAX)
+    throw new Error('Input too large.');
+
+  if (!test)
     setResult(total.toLocaleString());
   else
     return total;
