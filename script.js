@@ -157,7 +157,7 @@ const ROMAN_MAP = {
 
 function convertToInt(raw, test = false) {
   if (typeof raw !== 'string')
-    throw new Error("Input must be a valid Roman numeral.");
+    throw new Error('Input must be a valid Roman numeral.');
 
   const s = raw.toUpperCase().replace(/\s/g, '');
 
