@@ -130,7 +130,7 @@ function convertToRoman(raw, test = false) {
     throw new Error('No valid roman equivalent.');
   }
   if (n > INT_MAX) {
-    throw new Error(`Input too large.`);
+    throw new Error('Input too large.');
   }
 
   let num = n;
@@ -181,7 +181,7 @@ function convertToInt(raw, test = false) {
     throw new Error('Could not parse a valid numeral.');
   }
   if (total > INT_MAX) {
-    throw new Error(`Input too large.`);
+    throw new Error('Input too large.');
   }
 
   if(!test)
