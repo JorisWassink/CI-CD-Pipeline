@@ -77,7 +77,7 @@ describe('convertToRoman', function() {
   });
 
   it('should throw an error for numbers over 3999', function() {
-    expect(() => convertToRoman(4000, true)).to.throw("Input too large.");
+    expect(() => convertToRoman(4000, true)).to.throw("Input must be a valid Roman numeral.");
   });
 
   it('should throw an error for fractions', function() {
